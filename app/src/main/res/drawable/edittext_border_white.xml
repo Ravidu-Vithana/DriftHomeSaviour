@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Transparent background for EditText -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent"/> <!-- No background -->
+        </shape>
+    </item>
+
+    <!-- Bottom border -->
+    <item android:top="48dp"> <!-- Adjust height to match EditText -->
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white"/> <!-- White bottom border -->
+            <size android:height="1dp"/> <!-- Border thickness -->
+        </shape>
+    </item>
+
+</layer-list>
