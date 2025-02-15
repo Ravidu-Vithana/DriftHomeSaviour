@@ -14,4 +14,6 @@
     <color name="d_purple">#9856F5</color>
     <color name="d_lightPurple">#CD56F5</color>
     <color name="d_orange">#F5A356</color>
+    <color name="d_orange2">#EE7300</color>
+    <color name="d_yellow">#FFCB2F</color>
 </resources>

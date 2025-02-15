@@ -37,6 +37,14 @@
     <string name="d_rideRequest_btn1">Reject</string>
     <string name="d_rideRequest_btn2">Accept</string>
 
+    <string name="d_pickup_text1">Pickup Started</string>
+    <string name="d_pickup_text2">Jayathilaka Weerasinghe</string>
+    <string name="d_pickup_text3">2, Havelock Road, Colombo 03, Colombo</string>
+    <string name="d_pickup_text4">Pickup Location</string>
+    <string name="d_pickup_btn1">Report</string>
+    <string name="d_pickup_btn2">Cancel</string>
+    <string name="d_pickup_btn3">Mark as Arrived</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_base">BaseActivity</string>
