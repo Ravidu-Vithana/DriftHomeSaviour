@@ -31,6 +31,11 @@
     <string name="d_homeFragment_text3">Please complete your KYC to start the service</string>
     <string name="d_homeFragment_btn1">Fill the KYC</string>
 
+    <string name="d_rideRequest_text1">Name:</string>
+    <string name="d_rideRequest_text2">Alex Johnson</string>
+    <string name="d_rideRequest_btn1">Reject</string>
+    <string name="d_rideRequest_btn2">Accept</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_base">BaseActivity</string>

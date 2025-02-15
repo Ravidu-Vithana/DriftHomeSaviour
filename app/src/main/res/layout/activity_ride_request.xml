@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RideRequestActivity">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:name="com.ryvk.drifthomesaviour.CommonHeaderFragment"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/d_common_header_height"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        app:cardCornerRadius="@dimen/d_button_corner_radius"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragmentContainerView">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/d_lightBlue2"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp">
+
+            <Button
+                android:id="@+id/button11"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/white"
+                android:text="@string/d_rideRequest_btn1"
+                android:textColor="@color/d_red1"
+                android:textStyle="bold"
+                app:cornerRadius="@dimen/d_button_corner_radius"
+                app:layout_constraintStart_toStartOf="@+id/textView4"
+                app:layout_constraintTop_toBottomOf="@+id/textView4"
+                app:strokeColor="@color/d_red1" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/lexend_deca"
+                android:text="@string/d_rideRequest_text1"
+                android:textSize="15sp"
+                app:layout_constraintStart_toEndOf="@+id/imageView2"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/account_avatar" />
+
+            <TextView
+                android:id="@+id/textView16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFamily="@font/lexend_deca"
+                android:text="@string/d_rideRequest_text2"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="@+id/textView4"
+                app:layout_constraintStart_toEndOf="@+id/textView4"
+                app:layout_constraintTop_toTopOf="@+id/textView4" />
+
+            <Button
+                android:id="@+id/button10"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/white"
+                android:text="@string/d_rideRequest_btn2"
+                android:textColor="@color/d_blue"
+                android:textStyle="bold"
+                app:cornerRadius="@dimen/d_button_corner_radius"
+                app:layout_constraintBottom_toBottomOf="@+id/button11"
+                app:layout_constraintStart_toEndOf="@+id/button11"
+                app:layout_constraintTop_toTopOf="@+id/button11"
+                app:strokeColor="@color/d_blue" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/d_lightBlue"
+        app:layout_constraintBottom_toTopOf="@+id/cardView"
+        app:layout_constraintEnd_toEndOf="@+id/cardView"
+        app:layout_constraintStart_toStartOf="@+id/cardView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
