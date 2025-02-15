@@ -47,6 +47,10 @@
     <string name="d_profileFragment_edittext6_placeholder">ex: Toyota Corolla</string>
     <string name="d_profileFragment_btn1">Save</string>
 
+    <string name="d_settingsFragment_text1">Settings</string>
+    <string name="d_settingsFragment_btn1">Withdraw money</string>
+    <string name="d_settingsFragment_btn2">Logout</string>
+
     <string name="d_rideRequest_text1">Name:</string>
     <string name="d_rideRequest_text2">Alex Johnson</string>
     <string name="d_rideRequest_text3">Pickup Location</string>

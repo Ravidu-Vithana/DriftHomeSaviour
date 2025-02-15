@@ -17,6 +17,9 @@
         android:theme="@style/Theme.DriftHomeSaviour"
         tools:targetApi="31">
         <activity
+            android:name=".WithdrawMoneyActivity"
+            android:exported="false" />
+        <activity
             android:name=".TripActivity"
             android:exported="false" />
         <activity
