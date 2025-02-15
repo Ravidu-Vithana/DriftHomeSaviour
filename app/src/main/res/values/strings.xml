@@ -48,6 +48,18 @@
     <string name="d_pickup_btn3_text2">I arrived</string>
     <string name="d_pickup_btn4">Start Trip</string>
 
+    <string name="d_trip_text1_tripStarted">Trip Started</string>
+    <string name="d_trip_text1_tripEnd">Trip Ended</string>
+    <string name="d_trip_text2">Jayathilaka Weerasinghe</string>
+    <string name="d_trip_text3">2, Havelock Road, Colombo 03, Colombo</string>
+    <string name="d_trip_text4">2, Havelock Road, Colombo 03, Colombo</string>
+    <string name="d_trip_text5">Give Feedback</string>
+    <string name="d_trip_editText1">Tell us more...</string>
+    <string name="d_trip_btn1">Report</string>
+    <string name="d_trip_btn2">End Trip</string>
+    <string name="d_trip_btn3">Submit</string>
+    <string name="d_trip_btn4">Back To Home</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_base">BaseActivity</string>
