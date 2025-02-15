@@ -33,6 +33,7 @@
 
     <string name="d_rideRequest_text1">Name:</string>
     <string name="d_rideRequest_text2">Alex Johnson</string>
+    <string name="d_rideRequest_text3">Pickup Location</string>
     <string name="d_rideRequest_btn1">Reject</string>
     <string name="d_rideRequest_btn2">Accept</string>
 
