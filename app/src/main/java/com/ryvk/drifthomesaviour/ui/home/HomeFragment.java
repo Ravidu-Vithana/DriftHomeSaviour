@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.ryvk.drifthomesaviour.KycActivity;
 import com.ryvk.drifthomesaviour.RideRequestActivity;
 import com.ryvk.drifthomesaviour.databinding.FragmentHomeBinding;
 
@@ -49,6 +50,14 @@ public class HomeFragment extends Fragment {
                 }else{
                     Toast.makeText(getContext(), "Unchecked!", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        binding.button9.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getContext(), KycActivity.class);
+                startActivity(i);
             }
         });
 

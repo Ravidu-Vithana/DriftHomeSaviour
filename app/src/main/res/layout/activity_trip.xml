@@ -169,8 +169,8 @@
                 android:background="?android:attr/selectableItemBackground"
                 app:layout_constraintEnd_toEndOf="@+id/button12"
                 app:layout_constraintStart_toStartOf="@+id/button12"
-                app:srcCompat="@drawable/navigation"
-                tools:layout_editor_absoluteY="146dp" />
+                app:layout_constraintTop_toTopOf="@+id/textView18"
+                app:srcCompat="@drawable/navigation" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
@@ -257,6 +257,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:max="5"
+                android:numStars="5"
+                android:progressTint="@color/d_yellow"
+                android:rating="1"
+                android:stepSize="1"
                 android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

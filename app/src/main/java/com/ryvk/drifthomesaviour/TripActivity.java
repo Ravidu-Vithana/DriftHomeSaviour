@@ -1,5 +1,6 @@
 package com.ryvk.drifthomesaviour;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -46,6 +47,8 @@ public class TripActivity extends AppCompatActivity {
         });
 
         Button endButton = findViewById(R.id.button13);
+        Button feedbackSubmitButton = findViewById(R.id.button17);
+        Button backToHomeButton = findViewById(R.id.button18);
         endButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -57,8 +60,6 @@ public class TripActivity extends AppCompatActivity {
                         TextView feedbackSectionTitle = findViewById(R.id.textView21);
                         RatingBar feedbackRating = findViewById(R.id.ratingBar);
                         EditText feedbackDescription = findViewById(R.id.editTextTextMultiLine);
-                        Button feedbackSubmitButton = findViewById(R.id.button17);
-                        Button backToHomeButton = findViewById(R.id.button18);
 
                         title.setText(R.string.d_trip_text1_tripEnd);
                         endButton.setVisibility(View.INVISIBLE);
@@ -70,6 +71,20 @@ public class TripActivity extends AppCompatActivity {
                         backToHomeButton.setVisibility(View.VISIBLE);
                     }
                 });
+            }
+        });
+
+        feedbackSubmitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Submit feedback", Toast.LENGTH_SHORT).show();
+            }
+        });
+        backToHomeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getApplicationContext(), BaseActivity.class);
+                startActivity(i);
             }
         });
     }
