@@ -91,7 +91,9 @@
     <string name="d_trip_text2">Jayathilaka Weerasinghe</string>
     <string name="d_trip_text3">2, Havelock Road, Colombo 03, Colombo</string>
     <string name="d_trip_text4">2, Havelock Road, Colombo 03, Colombo</string>
-    <string name="d_trip_text5">Give Feedback</string>
+    <string name="d_trip_text5">Total Fare</string>
+    <string name="d_trip_text6_placeholder">Rs._______</string>
+    <string name="d_trip_text7">Give Feedback</string>
     <string name="d_trip_editText1">Tell us more...</string>
     <string name="d_trip_btn1">Report</string>
     <string name="d_trip_btn2">End Trip</string>
