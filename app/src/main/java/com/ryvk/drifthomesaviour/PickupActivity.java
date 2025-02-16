@@ -48,7 +48,7 @@ public class PickupActivity extends AppCompatActivity {
         reportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Reporting incident", Toast.LENGTH_SHORT).show();
+                Utils.reportTrip(PickupActivity.this);
             }
         });
 
