@@ -23,11 +23,17 @@
     <string name="d_kyc_text2">I hereby state that these documents provided are valid and true to the best of my knowledge. I also understand that these documents do meet the standards specified in Drift Home Terms and Policies.</string>
     <string name="d_kyc_text3">*** Please note that only cars, vans and other semi-luxury or luxury vehicles are allowed in this platform ***</string>
     <string name="d_kyc_btn1">Upload your NIC (Front)</string>
+    <string name="d_kyc_btn1_retake">Retake your NIC (Front)</string>
     <string name="d_kyc_btn2">Upload your NIC (Back)</string>
+    <string name="d_kyc_btn2_retake">Retake your NIC (Back)</string>
     <string name="d_kyc_btn3">Upload your Drivers’ License (Front)</string>
+    <string name="d_kyc_btn3_retake">Retake your Drivers’ License (Front)</string>
     <string name="d_kyc_btn4">Upload your Drivers’ License (Back)</string>
+    <string name="d_kyc_btn4_retake">Retake your Drivers’ License (Back)</string>
     <string name="d_kyc_btn5">Upload your Vehicles’ Registration</string>
+    <string name="d_kyc_btn5_retake">Retake your Vehicles’ Registration</string>
     <string name="d_kyc_btn6">Upload the Police Clearance certificate</string>
+    <string name="d_kyc_btn6_retake">Retake the Police Clearance certificate</string>
     <string name="d_kyc_btn7">Submit</string>
 
     <string name="d_otpVerification_verifyEmail">Verify the email</string>
