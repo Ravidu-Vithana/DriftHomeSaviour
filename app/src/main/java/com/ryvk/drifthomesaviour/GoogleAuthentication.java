@@ -139,6 +139,8 @@ public class GoogleAuthentication extends AppCompatActivity {
             saviour.put("mobile", loggedUser.getPhoneNumber());
             saviour.put("token", 0);
             saviour.put("trip_count", 0);
+            saviour.put("vehicle", "not assigned");
+            saviour.put("kyc", Saviour.KYC_UNVERIYFIED);
             saviour.put("created_at", Validation.todayDateTime());
             saviour.put("updated_at", Validation.todayDateTime());
 

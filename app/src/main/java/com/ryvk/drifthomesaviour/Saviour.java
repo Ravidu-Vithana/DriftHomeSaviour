@@ -7,7 +7,12 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.HashMap;
+
 public class Saviour {
+    public static final int KYC_UNVERIYFIED = 0;
+    public static final int KYC_PENDING = 1;
+    public static final int KYC_VERIYFIED = 2;
     private String email;
     private String name;
     private String mobile;
@@ -15,6 +20,8 @@ public class Saviour {
     private String gender;
     private int tokens;
     private int trip_count;
+    private String vehicle;
+    private int kyc;
     private String created_at;
     private String updated_at;
 
@@ -74,6 +81,22 @@ public class Saviour {
         this.trip_count = trip_count;
     }
 
+    public String getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(String vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public int getKyc() {
+        return kyc;
+    }
+
+    public void setKyc(int kyc) {
+        this.kyc = kyc;
+    }
+
     public String getCreated_at() {
         return created_at;
     }
@@ -88,6 +111,35 @@ public class Saviour {
 
     public void setUpdated_at(String updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public HashMap<String, Object> updateFields(String email, String name, String mobile, String gender, String dob) {
+        if (email != null) {
+            this.email = email;
+        }
+        if (name != null) {
+            this.name = name;
+        }
+        if (mobile != null) {
+            this.mobile = mobile;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
+        if (dob != null) {
+            this.dob = dob;
+        }
+
+        HashMap<String, Object> drinker = new HashMap<>();
+        drinker.put("name", this.getName());
+        drinker.put("email", this.getEmail());
+        drinker.put("mobile", this.getMobile());
+        drinker.put("gender", this.getGender());
+        drinker.put("dob", this.getDob());
+        drinker.put("updated_at", Validation.todayDateTime());
+
+        return drinker;
+
     }
 
     public static Saviour getSPSaviour(Context context){

@@ -65,6 +65,9 @@ dependencies {
     // Add the dependency for the Firebase Firestore
     implementation("com.google.firebase:firebase-firestore")
 
+    // Add the dependency for the Firebase Storage
+    implementation("com.google.firebase:firebase-storage")
+
     // Add OKHttp client
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 

@@ -25,6 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:editable="false"
+                android:enabled="false"
                 android:ems="10"
                 android:fontFamily="@font/lexend_deca"
                 android:hint="@string/d_profileFragment_edittext6_placeholder"
@@ -53,13 +54,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:editable="false"
+                android:enabled="false"
                 android:ems="10"
                 android:fontFamily="@font/lexend_deca"
                 android:hint="@string/d_profileFragment_edittext5_placeholder"
                 android:inputType="text"
                 android:textColorHint="@color/d_gray2"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="@+id/editTextText11"
+                app:layout_constraintEnd_toEndOf="@+id/spinner"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/textView42"
                 app:layout_constraintTop_toBottomOf="@+id/textView42" />
@@ -72,22 +74,15 @@
                 android:fontFamily="@font/lexend_deca"
                 android:text="@string/d_profileFragment_text7"
                 android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="@+id/editTextText11"
-                app:layout_constraintTop_toBottomOf="@+id/editTextText11" />
-
-            <EditText
-                android:id="@+id/editTextText11"
+                app:layout_constraintStart_toStartOf="@+id/spinner"
+                app:layout_constraintTop_toBottomOf="@+id/spinner" />
+            <Spinner
+                android:id="@+id/spinner"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginTop="8dp"
-                android:ems="10"
-                android:fontFamily="@font/lexend_deca"
-                android:hint="@string/d_profileFragment_edittext4_placeholder"
-                android:inputType="text"
-                android:textColorHint="@color/d_gray2"
-                android:textSize="16sp"
+                android:entries="@array/d_profileFragment_genderSpinner"
                 app:layout_constraintEnd_toEndOf="@+id/editTextText10"
-                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/textView41"
                 app:layout_constraintTop_toBottomOf="@+id/textView41" />
 
@@ -134,6 +129,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:clickable="true"
                 android:ems="10"
                 android:fontFamily="@font/lexend_deca"
                 android:hint="@string/d_profileFragment_edittext2_placeholder"
@@ -216,6 +214,16 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView35" />
+
+            <TextView
+                android:id="@+id/textView46"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/d_navbar_height"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/button19" />
 
             <Button
                 android:id="@+id/button19"

@@ -4,6 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="d_button_corner_radius">10dp</dimen>
     <dimen name="d_common_header_height">70dp</dimen>
+    <dimen name="d_navbar_height">70dp</dimen>
     <dimen name="d_bookRideBtn_animate">100dp</dimen>
     <dimen name="d_bookRideAddressText_animate">20dp</dimen>
     <dimen name="d_bookRideDriverCard_animate">40dp</dimen>

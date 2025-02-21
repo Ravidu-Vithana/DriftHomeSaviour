@@ -60,6 +60,36 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editTextText13" />
+
+            <EditText
+                android:id="@+id/editTextText13"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/edittext_border_white"
+                android:ems="10"
+                android:fontFamily="@font/lexend_deca_light"
+                android:hint="@string/d_signup_edittext4_placeholder"
+                android:inputType="text"
+                android:textColor="@color/white"
+                android:textColorHint="@color/d_gray2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView45" />
+
+            <TextView
+                android:id="@+id/textView45"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/lexend_deca"
+                android:text="@string/d_signup_text5"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="@+id/editTextText5"
                 app:layout_constraintTop_toBottomOf="@+id/editTextText5" />
 
             <EditText
@@ -169,12 +199,13 @@
 
             <ImageButton
                 android:id="@+id/imageButton3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="8dp"
                 android:background="?android:attr/selectableItemBackground"
-                app:layout_constraintEnd_toStartOf="@+id/textView12"
-                app:layout_constraintTop_toBottomOf="@+id/divider9"
+                app:layout_constraintEnd_toEndOf="@+id/textView12"
+                app:layout_constraintStart_toStartOf="@+id/textView12"
+                app:layout_constraintTop_toBottomOf="@+id/textView12"
                 app:srcCompat="@drawable/common_google_signin_btn_icon_dark" />
 
             <EditText
