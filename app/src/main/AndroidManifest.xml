@@ -17,6 +17,21 @@
         android:theme="@style/Theme.DriftHomeSaviour"
         tools:targetApi="31">
         <activity
+            android:name=".SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".GoogleAuthentication"
+            android:exported="false" />
+        <activity
+            android:name=".EmailPasswordAuthentication"
+            android:exported="false" />
+        <activity
             android:name=".KycActivity"
             android:exported="false" />
         <activity
@@ -44,12 +59,14 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAJnZni-qpN68pAz9l68BcH0aWvkxm6YR0" />
     </application>
 
 </manifest>

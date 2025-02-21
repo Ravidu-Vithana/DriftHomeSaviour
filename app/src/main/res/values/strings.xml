@@ -2,10 +2,12 @@
     <string name="app_name">Drift Home Saviour</string>
     <string name="d_app_or_divider">or</string>
     <string name="d_header_btn">History</string>
+    <string name="web_server_client_id">874437219273-m1s81urf2l3duhbi1dncbnqfigl8hhtc.apps.googleusercontent.com</string>
 
     <string name="d_signin_text1">Sign In</string>
     <string name="d_signin_text2">Email</string>
     <string name="d_signin_edittext1_placeholder">ex: john@gmail.com</string>
+    <string name="d_signin_text3">Password</string>
     <string name="d_signin_btn1">Take me Home!</string>
     <string name="d_signin_btn2">Wait.. I’m new to this!</string>
 
