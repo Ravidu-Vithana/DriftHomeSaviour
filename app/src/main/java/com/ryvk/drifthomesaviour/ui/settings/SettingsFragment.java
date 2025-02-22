@@ -17,14 +17,20 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.ryvk.drifthomesaviour.AlertUtils;
+import com.ryvk.drifthomesaviour.BaseActivity;
 import com.ryvk.drifthomesaviour.MainActivity;
 import com.ryvk.drifthomesaviour.R;
 import com.ryvk.drifthomesaviour.Saviour;
 import com.ryvk.drifthomesaviour.WithdrawMoneyActivity;
 import com.ryvk.drifthomesaviour.databinding.FragmentSettingsBinding;
+
+import java.util.HashMap;
 
 public class SettingsFragment extends Fragment {
     private static final String TAG = "SettingsFragment";
@@ -65,6 +71,25 @@ public class SettingsFragment extends Fragment {
                                             .requestIdToken(getString(R.string.web_server_client_id))
                                             .requestEmail()
                                             .build();
+                                    HashMap<String, Object> saviour = loggedSaviour.setOnline(false);
+
+                                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                                    db.collection("saviour")
+                                            .document(loggedSaviour.getEmail())
+                                            .update(saviour)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+                                                    Log.i(TAG, "update online: success");
+                                                }
+                                            })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.i(TAG, "update online: failure");
+                                                }
+                                            });
 
                                     loggedSaviour.removeSPSaviour(getContext());
 
