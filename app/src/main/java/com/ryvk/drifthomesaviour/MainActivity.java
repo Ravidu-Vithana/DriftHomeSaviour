@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -120,8 +121,8 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser user = getFirebaseUser();
         if (user != null) {
             //already signed in, ready to intent Home
-
             FirebaseFirestore db = FirebaseFirestore.getInstance();
+
             db.collection("saviour")
                     .document(user.getEmail())
                     .get()
@@ -129,6 +130,37 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             if (documentSnapshot.exists()) {
+
+                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        String token = task.getResult();
+                                        db.collection("saviour").document(user.getEmail())
+                                                .update("fcmToken", token)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        Log.d(TAG, "onSuccess: fcm token updated");
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.d(TAG, "onFailure: fcm token update failed");
+                                                    }
+                                                });
+                                    }
+                                });
+
+                                Log.d(TAG, "start to subscribe to topic");
+
+                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
+                                        .addOnCompleteListener(task -> {
+                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
+                                            Log.d("FCM", msg);
+                                        });
+
+                                Log.d(TAG, "end to subscribe to topic");
+
                                 Saviour saviour = documentSnapshot.toObject(Saviour.class);
 
                                 //update shared preferences

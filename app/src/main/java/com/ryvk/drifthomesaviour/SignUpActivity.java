@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -138,6 +139,21 @@ public class SignUpActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             if (documentSnapshot.exists()) {
+
+                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        String token = task.getResult();
+                                        db.collection("saviour").document(user.getEmail())
+                                                .update("fcmToken", token);
+                                    }
+                                });
+
+                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
+                                        .addOnCompleteListener(task -> {
+                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
+                                            Log.d("FCM", msg);
+                                        });
+
                                 Saviour saviour = documentSnapshot.toObject(Saviour.class);
 
                                 //update shared preferences

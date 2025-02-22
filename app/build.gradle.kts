@@ -65,6 +65,9 @@ dependencies {
     // Add the dependency for the Firebase Firestore
     implementation("com.google.firebase:firebase-firestore")
 
+    //Add the dependancy for the Firebase Cloud Messaging
+    implementation("com.google.firebase:firebase-messaging")
+
     // Add the dependency for the Firebase Storage
     implementation("com.google.firebase:firebase-storage")
 

@@ -15,10 +15,13 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SplashActivity extends AppCompatActivity {
     private static final String TAG = "SplashActivity";
@@ -61,6 +64,37 @@ public class SplashActivity extends AppCompatActivity {
                         .get()
                         .addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists()) {
+
+                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        String token = task.getResult();
+                                        db.collection("saviour").document(user.getEmail())
+                                                .update("fcmToken", token)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        Log.d(TAG, "onSuccess: fcm token updated");
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.d(TAG, "onFailure: fcm token update failed");
+                                                    }
+                                                });
+                                    }
+                                });
+
+                                Log.d(TAG, "start to subscribe to topic");
+
+                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
+                                        .addOnCompleteListener(task -> {
+                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
+                                            Log.d("FCM", msg);
+                                        });
+
+                                Log.d(TAG, "end to subscribe to topic");
+
                                 Saviour saviour = documentSnapshot.toObject(Saviour.class);
 
                                 saviour.updateSPSaviour(SplashActivity.this, saviour);
