@@ -1,5 +1,6 @@
 package com.ryvk.drifthomesaviour.ui.settings;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +29,8 @@ import com.ryvk.drifthomesaviour.databinding.FragmentSettingsBinding;
 public class SettingsFragment extends Fragment {
     private static final String TAG = "SettingsFragment";
     private FragmentSettingsBinding binding;
+
+    private LogoutListener logoutListener;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -74,8 +77,9 @@ public class SettingsFragment extends Fragment {
                                 }else{
                                     Log.i(TAG, "onClick: Logout . NO user ----------------------------------");
                                 }
-                                Intent i = new Intent(getContext(), MainActivity.class);
-                                startActivity(i);
+                                if (logoutListener != null) {
+                                    logoutListener.onLogout();
+                                }
                             }
                         }
                 );
@@ -90,4 +94,19 @@ public class SettingsFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof LogoutListener) {
+            logoutListener = (LogoutListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement LogoutListener");
+        }
+    }
+
+    public interface LogoutListener {
+        void onLogout();
+    }
+
 }

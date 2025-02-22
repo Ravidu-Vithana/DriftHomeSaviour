@@ -1,6 +1,8 @@
 package com.ryvk.drifthomesaviour;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -12,8 +14,10 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.ryvk.drifthomesaviour.databinding.ActivityBaseBinding;
+import com.ryvk.drifthomesaviour.ui.settings.SettingsFragment;
 
-public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity implements SettingsFragment.LogoutListener {
+    private static final String TAG = "BaseActivity";
 
     private ActivityBaseBinding binding;
 
@@ -35,4 +39,16 @@ public class BaseActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy: Base Activity");
+    }
+
+    @Override
+    public void onLogout() {
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
+        finish();
+    }
 }

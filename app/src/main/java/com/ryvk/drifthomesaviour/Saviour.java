@@ -3,9 +3,7 @@ package com.ryvk.drifthomesaviour;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.google.firebase.firestore.GeoPoint;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.HashMap;
 
@@ -22,6 +20,7 @@ public class Saviour {
     private int trip_count;
     private String vehicle;
     private int kyc;
+    private boolean online;
     private String created_at;
     private String updated_at;
 
@@ -97,6 +96,20 @@ public class Saviour {
         this.kyc = kyc;
     }
 
+    public boolean isOnline() {
+        return online;
+    }
+
+    public HashMap<String, Object> setOnline(boolean online) {
+        this.online = online;
+
+        HashMap<String, Object> saviour = new HashMap<>();
+        saviour.put("online", this.isOnline());
+
+        return saviour;
+
+    }
+
     public String getCreated_at() {
         return created_at;
     }
@@ -130,15 +143,15 @@ public class Saviour {
             this.dob = dob;
         }
 
-        HashMap<String, Object> drinker = new HashMap<>();
-        drinker.put("name", this.getName());
-        drinker.put("email", this.getEmail());
-        drinker.put("mobile", this.getMobile());
-        drinker.put("gender", this.getGender());
-        drinker.put("dob", this.getDob());
-        drinker.put("updated_at", Validation.todayDateTime());
+        HashMap<String, Object> saviour = new HashMap<>();
+        saviour.put("name", this.getName());
+        saviour.put("email", this.getEmail());
+        saviour.put("mobile", this.getMobile());
+        saviour.put("gender", this.getGender());
+        saviour.put("dob", this.getDob());
+        saviour.put("updated_at", Validation.todayDateTime());
 
-        return drinker;
+        return saviour;
 
     }
 

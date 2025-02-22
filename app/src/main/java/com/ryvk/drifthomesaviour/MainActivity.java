@@ -28,6 +28,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int RC_EPSIGNIN = 1001;
+    private static final int RC_TOHOME = 1005;
+    private static final int RC_TOSIGNUP = 1006;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +52,6 @@ public class MainActivity extends AppCompatActivity {
                 String email = emailEditText.getText().toString().trim();
                 String password = passwordEditText.getText().toString().trim();
 
-                Log.i(TAG, "email: "+email);
-                Log.i(TAG, "password: "+password);
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Intent i = new Intent(MainActivity.this, SignUpActivity.class);
-                        startActivity(i);
+                        startActivityForResult(i,RC_TOSIGNUP);
                     }
                 });
             }
@@ -109,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK){
                 checkCurrentUser();
             }
+        } else if (requestCode == RC_TOHOME) {
+            Log.i(TAG, "onActivityResult: Logout Successful");
+        } else if (requestCode == RC_TOSIGNUP) {
+            Log.i(TAG, "onActivityResult: Navigate back from SignUp Successful");
         }
     }
 
@@ -135,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         Intent i = new Intent(MainActivity.this, BaseActivity.class);
-                                        startActivity(i);
+                                        startActivityForResult(i,RC_TOHOME);
                                     }
                                 });
 
@@ -154,23 +157,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
-    public void deleteUser() {
-        // [START delete_user]
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        user.delete()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "User account deleted.");
-                        }
-                    }
-                });
-        // [END delete_user]
-    }
-
 
     public static FirebaseUser getFirebaseUser (){
         return FirebaseAuth.getInstance().getCurrentUser();
