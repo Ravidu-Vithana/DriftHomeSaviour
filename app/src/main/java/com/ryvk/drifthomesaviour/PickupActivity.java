@@ -70,7 +70,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
     private Saviour loggedSaviour;
     private String rideId;
     private String drinkerName;
-    private LatLng userLocation;
+    private GeoPoint userLocation;
     private GeoPoint pickupLocation;
     private String pickupAddress;
     private String distanceInKm;
@@ -78,6 +78,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
     private FusedLocationProviderClient fusedLocationClient;
     private static final OkHttpClient client = new OkHttpClient();
     private OnBackPressedCallback callback;
+    private Thread markAsArrivedButtonThread;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1002;
 
     @Override
@@ -118,7 +119,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                cancelRide();
+                cancelRide(false);
             }
         };
 
@@ -140,7 +141,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
                     // Create the URI for Google Maps navigation
                     String uri = String.format("google.navigation:q=%f,%f&origin=%f,%f&mode=d",
                             pickupLocation.getLatitude(), pickupLocation.getLongitude(),
-                            userLocation.latitude, userLocation.longitude);
+                            userLocation.getLatitude(), userLocation.getLongitude());
 
                     // Create an Intent to open Google Maps
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
@@ -167,35 +168,43 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         });
 
         Button markAsArrivedButton = findViewById(R.id.button13);
-        Button iArrivedButton = findViewById(R.id.button15);
-        Button startTripButton = findViewById(R.id.button16);
         markAsArrivedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        markAsArrivedButton.setVisibility(View.INVISIBLE);
-                        iArrivedButton.setVisibility(View.VISIBLE);
-                        startTripButton.setVisibility(View.VISIBLE);
-                    }
-                });
+                markAsArrived();
             }
         });
+        markAsArrivedButtonThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int x = 20; x > 0; x--){
+                    try {
+                        Thread.sleep(1000);
+                    }catch (Exception e){
+                        Log.e(TAG, "run: mark as arrived button enabling",e);
+                    }
+                    int seconds = x;
+                    runOnUiThread(()->markAsArrivedButton.setText("Mark in "+seconds+"s"));
+                }
+                runOnUiThread(()->markAsArrivedButton.setText(R.string.d_pickup_btn3_text2));
+                runOnUiThread(()->markAsArrivedButton.setEnabled(true));
+            }
+        });
+        markAsArrivedButtonThread.start();
 
         Button cancelButton = findViewById(R.id.button14);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                cancelRide();
+                cancelRide(false);
             }
         });
 
+        Button startTripButton = findViewById(R.id.button16);
         startTripButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), TripActivity.class);
-                startActivity(i);
+                startTrip();
             }
         });
 
@@ -231,7 +240,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
     }
 
     private void getRoute() {
-        String origin = userLocation.latitude + "," + userLocation.longitude;
+        String origin = userLocation.getLatitude() + "," + userLocation.getLongitude();
         String destination = pickupLocation.getLatitude() + "," + pickupLocation.getLongitude();
 
         String apiKey = loggedSaviour.getApiKey(PickupActivity.this);
@@ -338,11 +347,20 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
                 @Override
                 public void onSuccess(Location location) {
                     if (location != null) {
-                        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        userLocation = new GeoPoint(location.getLatitude(),location.getLongitude());
+
+                        Gson gson = new GsonBuilder()
+                                .registerTypeAdapter(GeoPoint.class, new GeoPointAdapter())
+                                .create();
+                        JsonObject rideData = gson.fromJson(intentBody,JsonObject.class);
+                        rideData.add("userLocation",gson.toJsonTree(userLocation).getAsJsonObject());
+                        intentBody = gson.toJson(rideData);
+
+                        LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                         LatLng pickupLatLng = new LatLng(pickupLocation.getLatitude(), pickupLocation.getLongitude());
 
                         // Add marker for the user's location
-                        mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location"));
+                        mMap.addMarker(new MarkerOptions().position(userLatLng).title("Your Location"));
 
                         // Add marker for the pickup location
                         mMap.addMarker(new MarkerOptions().position(pickupLatLng).title("Pickup Location"));
@@ -350,7 +368,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
 
                         // Move camera to show both locations
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                        builder.include(userLocation);
+                        builder.include(userLatLng);
                         builder.include(pickupLatLng);
                         LatLngBounds bounds = builder.build();
                         int padding = 50; // padding around the map
@@ -385,13 +403,113 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         @Override
         public void onReceive(Context context, Intent intent) {
             if ("com.ryvk.drifthome.REQUEST_RIDE_CANCEL".equals(intent.getAction())) {
-                cancelRide();
+                cancelRide(true);
             }
         }
     };
 
-    private void cancelRide(){
-        AlertUtils.showConfirmDialog(PickupActivity.this, "Cancellation Request", "Drinker is requesting to cancel.", new DialogInterface.OnClickListener() {
+    private void startTrip(){
+
+        new Thread(()->{
+            JsonObject json = new JsonObject();
+            try {
+                json.addProperty("rideId", rideId);
+                json.addProperty("fcmToken", RideRequestActivity.drinkerFcmToken);
+                Log.d(TAG, "onClick: mark as arrived -> fcmToken: "+RideRequestActivity.drinkerFcmToken);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+
+            String BASE_URL = getResources().getString(R.string.base_url);
+            RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+            Request request = new Request.Builder()
+                    .url(BASE_URL + "/start-trip")
+                    .post(requestBody)
+                    .build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Request Failed: " + e.getMessage());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        System.out.println("Notification Sent: " + response.body().string());
+
+                        Intent i = new Intent(getApplicationContext(), TripActivity.class);
+                        i.putExtra("body", intentBody);
+                        startActivity(i);
+                        finish();
+
+                    } else {
+                        System.out.println("Error: " + response.code());
+                    }
+                }
+            });
+        }).start();
+
+    }
+
+    private void markAsArrived(){
+
+        Button markAsArrivedButton = findViewById(R.id.button13);
+        Button iArrivedButton = findViewById(R.id.button15);
+        Button startTripButton = findViewById(R.id.button16);
+
+        runOnUiThread(()->{
+            markAsArrivedButton.setVisibility(View.INVISIBLE);
+            iArrivedButton.setVisibility(View.VISIBLE);
+            startTripButton.setVisibility(View.VISIBLE);
+        });
+
+        JsonObject json = new JsonObject();
+        try {
+            json.addProperty("rideId", rideId);
+            json.addProperty("fcmToken", RideRequestActivity.drinkerFcmToken);
+            Log.d(TAG, "onClick: mark as arrived -> fcmToken: "+RideRequestActivity.drinkerFcmToken);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        String BASE_URL = getResources().getString(R.string.base_url);
+        RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url(BASE_URL + "/mark-as-arrived")
+                .post(requestBody)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                System.out.println("Request Failed: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    System.out.println("Notification Sent: " + response.body().string());
+                } else {
+                    System.out.println("Error: " + response.code());
+                }
+            }
+        });
+    }
+
+    private void cancelRide(boolean drinkerIsRequesting){
+
+        String alertTitle = "Cancellation Request";
+        String alertMessage = "Drinker is requesting to cancel.";
+
+        if(!drinkerIsRequesting){
+            alertTitle = "Cancel booking.";
+            alertMessage = "Are you sure you want to cancel?";
+        }
+
+        AlertUtils.showConfirmDialog(PickupActivity.this, alertTitle, alertMessage, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 JsonObject json = new JsonObject();

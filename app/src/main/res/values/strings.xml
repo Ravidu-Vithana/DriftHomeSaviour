@@ -110,8 +110,9 @@
     <string name="d_pickup_text4">Pickup Location</string>
     <string name="d_pickup_btn1">Report</string>
     <string name="d_pickup_btn2">Cancel</string>
-    <string name="d_pickup_btn3_text1">Mark as Arrived</string>
-    <string name="d_pickup_btn3_text2">I arrived</string>
+    <string name="d_pickup_btn3_text1">Mark in 20s</string>
+    <string name="d_pickup_btn3_text2">Mark as Arrived</string>
+    <string name="d_pickup_btn3_text3">I arrived</string>
     <string name="d_pickup_btn4">Start Trip</string>
 
     <string name="d_trip_text1_tripStarted">Trip Started</string>
