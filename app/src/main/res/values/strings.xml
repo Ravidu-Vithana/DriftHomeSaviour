@@ -104,8 +104,8 @@
 
     <string name="d_pickup_text1_pickupStarted">Pickup Started</string>
     <string name="d_pickup_text1_pickedup">Picked Up</string>
-    <string name="d_pickup_text2">Jayathilaka Weerasinghe</string>
-    <string name="d_pickup_text3">2, Havelock Road, Colombo 03, Colombo</string>
+    <string name="d_pickup_text2">___________________</string>
+    <string name="d_pickup_text3">______________________________</string>
     <string name="d_pickup_text4">Pickup Location</string>
     <string name="d_pickup_btn1">Report</string>
     <string name="d_pickup_btn2">Cancel</string>

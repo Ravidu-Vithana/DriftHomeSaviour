@@ -1,5 +1,7 @@
 package com.ryvk.drifthomesaviour;
 
+import static com.ryvk.drifthomesaviour.Utils.decodePolyline;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -54,6 +56,7 @@ import okhttp3.Response;
 
 public class RideRequestActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = "RideRequestActivity";
+    private String intentBody;
     private Saviour loggedSaviour;
     private String rideId;
     private String drinkerName;
@@ -100,6 +103,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                     standby.interrupt();
                 }
                 Intent i = new Intent(getApplicationContext(), PickupActivity.class);
+                i.putExtra("body", intentBody);
                 startActivity(i);
                 finish();
             }
@@ -109,7 +113,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
         rejectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                exitDialog = AlertUtils.showExitConfirmationDialog(RideRequestActivity.this);
+                endRideRequest();
             }
         });
 
@@ -119,9 +123,8 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                 .create();
 
         if (intent != null) {
-            String title = intent.getStringExtra("title");
-            String body = intent.getStringExtra("body");
-            JsonObject rideData = gson.fromJson(body, JsonObject.class);
+            intentBody = intent.getStringExtra("body");
+            JsonObject rideData = gson.fromJson(intentBody, JsonObject.class);
 
             rideId = rideData.get("rideId").getAsString();
             drinkerName = rideData.get("customerName").getAsString();
@@ -152,12 +155,12 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
         String destination = pickupLocation.getLatitude() + "," + pickupLocation.getLongitude();
 
         String apiKey = loggedSaviour.getApiKey(RideRequestActivity.this);
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&key=" + apiKey;
+        String directionsApiUrl = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&key=" + apiKey;
 
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url(url).build();
+        Request directionsApiRequest = new Request.Builder().url(directionsApiUrl).build();
 
-        client.newCall(request).enqueue(new Callback() {
+        client.newCall(directionsApiRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.e(TAG, "Failed to get directions", e);
@@ -187,6 +190,14 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                                 String distanceText = leg.getAsJsonObject("distance").get("text").getAsString();
                                 double distanceValue = leg.getAsJsonObject("distance").get("value").getAsDouble(); // in meters
                                 distanceInKm = String.valueOf(distanceValue / 1000);
+
+                                Gson gson = new GsonBuilder()
+                                        .registerTypeAdapter(GeoPoint.class, new GeoPointAdapter())
+                                        .create();
+                                JsonObject rideData = gson.fromJson(intentBody, JsonObject.class);
+                                rideData.addProperty("distanceInKm",distanceInKm);
+                                intentBody = gson.toJson(rideData);
+
                                 Log.d(TAG, "Distance: " + distanceText + " (" + distanceInKm + " km)");
                                 // Add the route polyline to the map
                                 drawRouteOnMap(polylinePoints);
@@ -212,37 +223,6 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                 }
             }
         });
-    }
-
-    private List<LatLng> decodePolyline(String encoded) {
-        List<LatLng> polyline = new ArrayList<>();
-        int index = 0, len = encoded.length();
-        int lat = 0, lng = 0;
-
-        while (index < len) {
-            int b, shift = 0, result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dLat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lat += dLat;
-
-            shift = 0;
-            result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dLng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lng += dLng;
-
-            polyline.add(new LatLng(lat / 1E5, lng / 1E5));
-        }
-
-        return polyline;
     }
 
     @Override
