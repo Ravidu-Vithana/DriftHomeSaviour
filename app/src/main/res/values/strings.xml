@@ -94,6 +94,7 @@
     <string name="d_withdrawMoney_editText2">############</string>
     <string name="d_withdrawMoney_editText3">Commercial Bank</string>
     <string name="d_withdrawMoney_btn1">Request</string>
+    <string name="base_url">http://192.168.8.162:5000</string>
 
     <string name="d_rideRequest_text1">Name:</string>
     <string name="d_rideRequest_text2">______________</string>

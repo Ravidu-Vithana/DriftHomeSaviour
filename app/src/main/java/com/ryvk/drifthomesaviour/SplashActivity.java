@@ -25,6 +25,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SplashActivity extends AppCompatActivity {
     private static final String TAG = "SplashActivity";
+    public static String fcmToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +70,21 @@ public class SplashActivity extends AppCompatActivity {
                                     if (task.isSuccessful()) {
                                         String token = task.getResult();
                                         db.collection("saviour").document(user.getEmail())
+                                                .update("fcmToken", token);
+                                        SplashActivity.fcmToken = token;
+                                    }
+                                });
+
+                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
+                                        .addOnCompleteListener(task -> {
+                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
+                                            Log.d("FCM", msg);
+                                        });
+
+                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        String token = task.getResult();
+                                        db.collection("saviour").document(user.getEmail())
                                                 .update("fcmToken", token)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
@@ -84,16 +100,6 @@ public class SplashActivity extends AppCompatActivity {
                                                 });
                                     }
                                 });
-
-                                Log.d(TAG, "start to subscribe to topic");
-
-                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
-                                        .addOnCompleteListener(task -> {
-                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
-                                            Log.d("FCM", msg);
-                                        });
-
-                                Log.d(TAG, "end to subscribe to topic");
 
                                 Saviour saviour = documentSnapshot.toObject(Saviour.class);
 

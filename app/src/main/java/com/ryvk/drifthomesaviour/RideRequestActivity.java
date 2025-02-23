@@ -36,7 +36,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -46,12 +48,15 @@ import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class RideRequestActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -59,8 +64,9 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
     private String intentBody;
     private Saviour loggedSaviour;
     private String rideId;
+    public static String drinkerFcmToken;
     private String drinkerName;
-    private LatLng userLocation;
+    private GeoPoint userLocation;
     private GeoPoint pickupLocation;
     private String distanceInKm;
     private GoogleMap mMap;
@@ -69,6 +75,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
     private OnBackPressedCallback callback;
     private AlertDialog exitDialog;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1002;
+    private static final OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +109,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                 if (standby != null && standby.isAlive()) {
                     standby.interrupt();
                 }
+                checkIfRequestExists();
                 Intent i = new Intent(getApplicationContext(), PickupActivity.class);
                 i.putExtra("body", intentBody);
                 startActivity(i);
@@ -124,13 +132,97 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
 
         if (intent != null) {
             intentBody = intent.getStringExtra("body");
+
+            Log.d(TAG, "onCreate: get intent data "+intentBody);
+
             JsonObject rideData = gson.fromJson(intentBody, JsonObject.class);
 
             rideId = rideData.get("rideId").getAsString();
             drinkerName = rideData.get("customerName").getAsString();
+            drinkerFcmToken = rideData.get("fcmToken").getAsString();
             pickupLocation = gson.fromJson(rideData.get("location"), GeoPoint.class);
 
         }
+    }
+
+    private void acceptRide(){
+        Log.d(TAG, "acceptRide: fcm token :"+drinkerFcmToken);
+
+        JsonObject json = new JsonObject();
+        try {
+            json.addProperty("rideId", rideId);
+            json.addProperty("saviour_email", loggedSaviour.getEmail());
+            json.addProperty("fcmToken", drinkerFcmToken);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        String BASE_URL = getResources().getString(R.string.base_url);
+        RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url(BASE_URL + "/send-ride-accepted")
+                .post(requestBody)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                System.out.println("Request Failed: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    System.out.println("Notification Sent: " + response.body().string());
+                } else {
+                    System.out.println("Error: " + response.code());
+                }
+            }
+        });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                HashMap<String,Object> tripUpdateHash = new HashMap<>();
+                tripUpdateHash.put("saviour_email",loggedSaviour.getEmail());
+                tripUpdateHash.put("current_saviour_location",userLocation);
+
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("trip").document(rideId)
+                        .update(tripUpdateHash)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Log.d(TAG, "onSuccess: Saviour email added to trip : success");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "onFailure: Saviour email adding to trip : failed");
+                            }
+                        });
+            }
+        }).start();
+
+    }
+
+    private void checkIfRequestExists(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("trip").document(rideId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        acceptRide();
+                    } else {
+                        Log.d("Firestore", "No such document exists");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error fetching document", e);
+                });
     }
 
     private void checkLocationPermission() {
@@ -151,13 +243,12 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void getRoute() {
-        String origin = userLocation.latitude + "," + userLocation.longitude;
+        String origin = userLocation.getLatitude() + "," + userLocation.getLongitude();
         String destination = pickupLocation.getLatitude() + "," + pickupLocation.getLongitude();
 
         String apiKey = loggedSaviour.getApiKey(RideRequestActivity.this);
         String directionsApiUrl = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&key=" + apiKey;
 
-        OkHttpClient client = new OkHttpClient();
         Request directionsApiRequest = new Request.Builder().url(directionsApiUrl).build();
 
         client.newCall(directionsApiRequest).enqueue(new Callback() {
@@ -236,11 +327,12 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                 @Override
                 public void onSuccess(Location location) {
                     if (location != null) {
-                        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                        LatLng userLatLng = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
                         LatLng pickupLatLng = new LatLng(pickupLocation.getLatitude(), pickupLocation.getLongitude());
 
                         // Add marker for the user's location
-                        mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location"));
+                        mMap.addMarker(new MarkerOptions().position(userLatLng).title("Your Location"));
 
                         // Add marker for the pickup location
                         mMap.addMarker(new MarkerOptions().position(pickupLatLng).title("Pickup Location"));
@@ -248,7 +340,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
 
                         // Move camera to show both locations
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                        builder.include(userLocation);
+                        builder.include(userLatLng);
                         builder.include(pickupLatLng);
                         LatLngBounds bounds = builder.build();
                         int padding = 50; // padding around the map

@@ -4,7 +4,11 @@ import static com.ryvk.drifthomesaviour.Utils.decodePolyline;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -27,6 +31,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -53,8 +58,10 @@ import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class PickupActivity extends AppCompatActivity  implements OnMapReadyCallback {
@@ -69,8 +76,8 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
     private String distanceInKm;
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
+    private static final OkHttpClient client = new OkHttpClient();
     private OnBackPressedCallback callback;
-    private AlertDialog exitDialog;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1002;
 
     @Override
@@ -83,6 +90,9 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(requestRideCancelReceiver,
+                new IntentFilter("com.ryvk.drifthome.REQUEST_RIDE_CANCEL"));
 
         Intent intent = getIntent();
         Gson gson = new GsonBuilder()
@@ -108,7 +118,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                exitDialog = AlertUtils.showExitConfirmationDialog(PickupActivity.this);
+                cancelRide();
             }
         };
 
@@ -177,8 +187,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), BaseActivity.class);
-                startActivity(i);
+                cancelRide();
             }
         });
 
@@ -227,7 +236,6 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
 
         String apiKey = loggedSaviour.getApiKey(PickupActivity.this);
 
-        OkHttpClient client = new OkHttpClient();
         String directionsApiUrl = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&key=" + apiKey;
         String geocodingApiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + pickupLocation.getLatitude() + "," + pickupLocation.getLongitude() + "&key=" + apiKey;
 
@@ -372,6 +380,57 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
             }
         });
     }
+
+    private BroadcastReceiver requestRideCancelReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if ("com.ryvk.drifthome.REQUEST_RIDE_CANCEL".equals(intent.getAction())) {
+                cancelRide();
+            }
+        }
+    };
+
+    private void cancelRide(){
+        AlertUtils.showConfirmDialog(PickupActivity.this, "Cancellation Request", "Drinker is requesting to cancel.", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                JsonObject json = new JsonObject();
+                try {
+                    json.addProperty("rideId", rideId);
+                    json.addProperty("fcmToken", RideRequestActivity.drinkerFcmToken);
+                    Log.d(TAG, "onClick: cancel booking confirmed -> fcmToken: "+RideRequestActivity.drinkerFcmToken);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+                String BASE_URL = getResources().getString(R.string.base_url);
+                RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+                Request request = new Request.Builder()
+                        .url(BASE_URL + "/send-ride-cancel")
+                        .post(requestBody)
+                        .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Request Failed: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (response.isSuccessful()) {
+                            System.out.println("Notification Sent: " + response.body().string());
+                            finish();
+                        } else {
+                            System.out.println("Error: " + response.code());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     private void showCallOptionsPopup(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenu().add("Call the Drinker");
@@ -384,5 +443,11 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         });
 
         popup.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(requestRideCancelReceiver);
+        super.onDestroy();
     }
 }

@@ -145,6 +145,7 @@ public class SignUpActivity extends AppCompatActivity {
                                         String token = task.getResult();
                                         db.collection("saviour").document(user.getEmail())
                                                 .update("fcmToken", token);
+                                        SplashActivity.fcmToken = token;
                                     }
                                 });
 
