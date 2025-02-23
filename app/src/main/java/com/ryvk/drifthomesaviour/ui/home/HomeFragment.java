@@ -1,8 +1,10 @@
 package com.ryvk.drifthomesaviour.ui.home;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -112,6 +114,14 @@ public class HomeFragment extends Fragment  implements OnMapReadyCallback {
     }
 
     private void enableUserLocation() {
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager != null &&
+                (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+                        !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
+            // Prompt user to enable location services
+            Toast.makeText(getActivity(), "Location services are disabled", Toast.LENGTH_LONG).show();
+        }
+
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;

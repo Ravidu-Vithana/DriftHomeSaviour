@@ -20,7 +20,7 @@
         app:srcCompat="@drawable/googleg_standard_color_18" />
 
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/requestRideProgressBar"
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

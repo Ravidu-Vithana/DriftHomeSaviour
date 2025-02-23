@@ -2,6 +2,8 @@ package com.ryvk.drifthomesaviour;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 
 import com.google.gson.Gson;
 
@@ -153,6 +155,16 @@ public class Saviour {
 
         return saviour;
 
+    }
+
+    public String getApiKey(Context context) {
+        try {
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+            return ai.metaData.getString("com.google.android.geo.API_KEY");
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static Saviour getSPSaviour(Context context){
