@@ -71,26 +71,7 @@ public class SettingsFragment extends Fragment {
                                             .requestIdToken(getString(R.string.web_server_client_id))
                                             .requestEmail()
                                             .build();
-                                    HashMap<String, Object> saviour = loggedSaviour.setOnline(false);
-
-                                    FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                                    db.collection("saviour")
-                                            .document(loggedSaviour.getEmail())
-                                            .update(saviour)
-                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void unused) {
-                                                    Log.i(TAG, "update online: success");
-                                                }
-                                            })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.i(TAG, "update online: failure");
-                                                }
-                                            });
-
+                                    loggedSaviour.setOnline(false);
                                     loggedSaviour.removeSPSaviour(getContext());
 
                                     GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(getContext(), gso);

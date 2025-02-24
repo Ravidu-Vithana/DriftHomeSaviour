@@ -29,8 +29,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int RC_EPSIGNIN = 1001;
-    private static final int RC_TOHOME = 1005;
-    private static final int RC_TOSIGNUP = 1006;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Intent i = new Intent(MainActivity.this, SignUpActivity.class);
-                        startActivityForResult(i,RC_TOSIGNUP);
+                        startActivity(i);
+                        finish();
                     }
                 });
             }
@@ -88,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Intent i = new Intent(MainActivity.this,GoogleAuthentication.class);
-                        startActivityForResult(i,RC_EPSIGNIN);
+                        startActivity(i);
+                        finish();
                     }
                 });
             }
@@ -109,10 +109,6 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK){
                 checkCurrentUser();
             }
-        } else if (requestCode == RC_TOHOME) {
-            Log.i(TAG, "onActivityResult: Logout Successful");
-        } else if (requestCode == RC_TOSIGNUP) {
-            Log.i(TAG, "onActivityResult: Navigate back from SignUp Successful");
         }
     }
 
@@ -135,25 +131,11 @@ public class MainActivity extends AppCompatActivity {
                                     if (task.isSuccessful()) {
                                         String token = task.getResult();
                                         db.collection("saviour").document(user.getEmail())
-                                                .update("fcmToken", token);
-                                        SplashActivity.fcmToken = token;
-                                    }
-                                });
-
-                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
-                                        .addOnCompleteListener(task -> {
-                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
-                                            Log.d("FCM", msg);
-                                        });
-
-                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        String token = task.getResult();
-                                        db.collection("saviour").document(user.getEmail())
                                                 .update("fcmToken", token)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void unused) {
+                                                        SplashActivity.fcmToken = token;
                                                         Log.d(TAG, "onSuccess: fcm token updated");
                                                     }
                                                 })
@@ -175,7 +157,8 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         Intent i = new Intent(MainActivity.this, BaseActivity.class);
-                                        startActivityForResult(i,RC_TOHOME);
+                                        startActivity(i);
+                                        finish();
                                     }
                                 });
 

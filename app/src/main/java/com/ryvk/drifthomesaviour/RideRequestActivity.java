@@ -11,9 +11,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -101,6 +104,24 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
         };
 
         getOnBackPressedDispatcher().addCallback(this, callback);
+
+        Switch onOfflineButton = findViewById(R.id.toggleSwitch);
+        onOfflineButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+
+                HashMap<String, Object> saviour;
+
+                if(isChecked){
+                    loggedSaviour.setOnline(true);
+                }else{
+                    loggedSaviour.setOnline(false);
+                    endRideRequest();
+                }
+                loggedSaviour.updateSPSaviour(RideRequestActivity.this,loggedSaviour);
+
+            }
+        });
 
         Button acceptButton = findViewById(R.id.button10);
         acceptButton.setOnClickListener(new View.OnClickListener() {
@@ -310,7 +331,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
             public void run() {
                 if (mMap != null && !polylinePoints.isEmpty()) {
                     Polyline polyline = mMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(getResources().getColor(R.color.d_blue))); // Replace with your desired color
-                    polyline.setWidth(10); // You can change the width of the polyline
+                    polyline.setWidth(10);
                 }
             }
         });

@@ -4,9 +4,17 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.firestore.GeoPoint;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class Utils {
     public static void reportTrip(Context context){
@@ -41,5 +49,39 @@ public class Utils {
         }
 
         return polyline;
+    }
+    public static int getRoadDistance(String apiKey, GeoPoint origin, GeoPoint destination) {
+        try {
+            String url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=" +
+                    origin.getLatitude() + "," + origin.getLongitude() +
+                    "&destinations=" + destination.getLatitude() + "," + destination.getLongitude() +
+                    "&key=" + apiKey;
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .build();
+
+            OkHttpClient httpClient = new OkHttpClient();
+            Response response = httpClient.newCall(request).execute();
+
+            if (response.isSuccessful() && response.body() != null) {
+                String responseData = response.body().string();
+                JSONObject jsonResponse = new JSONObject(responseData);
+                JSONArray rows = jsonResponse.getJSONArray("rows");
+
+                if (rows.length() > 0) {
+                    JSONObject elements = rows.getJSONObject(0).getJSONArray("elements").getJSONObject(0);
+                    if (!elements.getString("status").equals("OK")) {
+                        // Distance not available
+                        return -1;
+                    }
+                    return elements.getJSONObject("distance").getInt("value"); // Distance in meters
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }

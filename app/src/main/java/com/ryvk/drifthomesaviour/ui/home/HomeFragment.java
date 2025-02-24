@@ -142,6 +142,12 @@ public class HomeFragment extends Fragment  implements OnMapReadyCallback {
         }
     }
 
+    @Override
+    public void onResume() {
+        updateUI();
+        super.onResume();
+    }
+
     private void updateUI(){
 
         Saviour loggedSaviour = Saviour.getSPSaviour(getContext());
@@ -171,6 +177,7 @@ public class HomeFragment extends Fragment  implements OnMapReadyCallback {
                     kycTextView.setVisibility(View.VISIBLE);
                     onOfflineButton.setVisibility(View.INVISIBLE);
                 }else if(loggedSaviour.getKyc() == Saviour.KYC_VERIYFIED){
+                    onOfflineButton.setChecked(loggedSaviour.isOnline());
                     onOfflineButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -178,30 +185,11 @@ public class HomeFragment extends Fragment  implements OnMapReadyCallback {
                             HashMap<String, Object> saviour;
 
                             if(isChecked){
-                                saviour = loggedSaviour.setOnline(true);
+                                loggedSaviour.setOnline(true);
                             }else{
-                                saviour = loggedSaviour.setOnline(false);
+                                loggedSaviour.setOnline(false);
                             }
                             loggedSaviour.updateSPSaviour(requireContext(),loggedSaviour);
-
-                            FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                            db.collection("saviour")
-                                    .document(loggedSaviour.getEmail())
-                                    .update(saviour)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-                                            Log.i(TAG, "update online: success");
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.i(TAG, "update online: failure");
-                                            AlertUtils.showAlert(getContext(),"Online Status Update Failed!","Error: "+e);
-                                        }
-                                    });
 
                         }
                     });

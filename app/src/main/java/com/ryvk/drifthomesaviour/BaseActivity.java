@@ -20,10 +20,13 @@ public class BaseActivity extends AppCompatActivity implements SettingsFragment.
     private static final String TAG = "BaseActivity";
 
     private ActivityBaseBinding binding;
+    private Saviour loggedSaviour;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        loggedSaviour = Saviour.getSPSaviour(BaseActivity.this);
 
         binding = ActivityBaseBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -41,14 +44,16 @@ public class BaseActivity extends AppCompatActivity implements SettingsFragment.
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         Log.i(TAG, "onDestroy: Base Activity");
+        loggedSaviour.setOnline(false);
+        loggedSaviour.updateSPSaviour(BaseActivity.this,loggedSaviour);
+        super.onDestroy();
     }
 
     @Override
     public void onLogout() {
-        Intent intent = new Intent();
-        setResult(RESULT_OK, intent);
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(i);
         finish();
     }
 }

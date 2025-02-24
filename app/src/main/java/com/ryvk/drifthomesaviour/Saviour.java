@@ -4,7 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
@@ -102,13 +109,46 @@ public class Saviour {
         return online;
     }
 
-    public HashMap<String, Object> setOnline(boolean online) {
+    public void setOnline(boolean online) {
         this.online = online;
 
         HashMap<String, Object> saviour = new HashMap<>();
         saviour.put("online", this.isOnline());
 
-        return saviour;
+        if(this.isOnline()){
+            FirebaseMessaging.getInstance().subscribeToTopic("saviours")
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
+                        Log.d("FCM", msg);
+                        Log.d("Saviour", "Saviour is added to the topic");
+                    });
+        }else{
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("saviours")
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Unsubscribed from saviours topic!" : "Unsubscription failed.";
+                        Log.d("FCM", msg);
+                        Log.d("Saviour", "Saviour is removed from the topic");
+                    });
+        }
+
+        if(this.email != null){
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("saviour")
+                    .document(this.email)
+                    .update(saviour)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Log.i("Saviour", "update online: success");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.i("Saviour", "update online: failure");
+                        }
+                    });
+        }
 
     }
 
@@ -182,6 +222,7 @@ public class Saviour {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("user",saviourJSON);
         editor.apply();
+        editor.commit();
     }
 
     public void removeSPSaviour(Context context){

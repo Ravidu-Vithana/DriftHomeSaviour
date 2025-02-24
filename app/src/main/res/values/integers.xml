@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="pickup_distance_threshold_meters">20000</integer>
+    <integer name="fee_per_km">200</integer>
 </resources>

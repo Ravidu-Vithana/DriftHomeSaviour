@@ -177,14 +177,14 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         markAsArrivedButtonThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int x = 20; x > 0; x--){
+                for(int x = 20; x >= 0; x--){
+                    int seconds = x;
+                    runOnUiThread(()->markAsArrivedButton.setText("Mark in "+seconds+"s"));
                     try {
                         Thread.sleep(1000);
                     }catch (Exception e){
                         Log.e(TAG, "run: mark as arrived button enabling",e);
                     }
-                    int seconds = x;
-                    runOnUiThread(()->markAsArrivedButton.setText("Mark in "+seconds+"s"));
                 }
                 runOnUiThread(()->markAsArrivedButton.setText(R.string.d_pickup_btn3_text2));
                 runOnUiThread(()->markAsArrivedButton.setEnabled(true));
@@ -410,46 +410,49 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
 
     private void startTrip(){
 
-        new Thread(()->{
-            JsonObject json = new JsonObject();
-            try {
-                json.addProperty("rideId", rideId);
-                json.addProperty("fcmToken", RideRequestActivity.drinkerFcmToken);
-                Log.d(TAG, "onClick: mark as arrived -> fcmToken: "+RideRequestActivity.drinkerFcmToken);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return;
-            }
-
-            String BASE_URL = getResources().getString(R.string.base_url);
-            RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
-            Request request = new Request.Builder()
-                    .url(BASE_URL + "/start-trip")
-                    .post(requestBody)
-                    .build();
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
+        AlertUtils.showConfirmDialog(PickupActivity.this, "Start Trip?", "Are you sure you want to start the trip?", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                JsonObject json = new JsonObject();
+                try {
+                    json.addProperty("rideId", rideId);
+                    json.addProperty("fcmToken", RideRequestActivity.drinkerFcmToken);
+                    Log.d(TAG, "onClick: mark as arrived -> fcmToken: "+RideRequestActivity.drinkerFcmToken);
+                } catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println("Request Failed: " + e.getMessage());
+                    return;
                 }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    if (response.isSuccessful()) {
-                        System.out.println("Notification Sent: " + response.body().string());
-
-                        Intent i = new Intent(getApplicationContext(), TripActivity.class);
-                        i.putExtra("body", intentBody);
-                        startActivity(i);
-                        finish();
-
-                    } else {
-                        System.out.println("Error: " + response.code());
+                String BASE_URL = getResources().getString(R.string.base_url);
+                RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+                Request request = new Request.Builder()
+                        .url(BASE_URL + "/start-trip")
+                        .post(requestBody)
+                        .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Request Failed: " + e.getMessage());
                     }
-                }
-            });
-        }).start();
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (response.isSuccessful()) {
+                            System.out.println("Notification Sent: " + response.body().string());
+
+                            Intent i = new Intent(getApplicationContext(), TripActivity.class);
+                            i.putExtra("body", intentBody);
+                            startActivity(i);
+                            finish();
+
+                        } else {
+                            System.out.println("Error: " + response.code());
+                        }
+                    }
+                });
+            }
+        });
 
     }
 
@@ -565,6 +568,9 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
 
     @Override
     protected void onDestroy() {
+        if (markAsArrivedButtonThread != null && markAsArrivedButtonThread.isAlive()) {
+            markAsArrivedButtonThread.interrupt();
+        }
         LocalBroadcastManager.getInstance(this).unregisterReceiver(requestRideCancelReceiver);
         super.onDestroy();
     }

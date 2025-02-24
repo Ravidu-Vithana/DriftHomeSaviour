@@ -27,7 +27,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     private static final String TAG = "SignUpActivity";
     private static final int RC_EPSIGNUP = 1000;
-    private static final int RC_TOHOME = 1005;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,8 +111,6 @@ public class SignUpActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK){
                 checkCurrentUser();
             }
-        } else if (requestCode == RC_TOHOME) {
-            finish();
         }
     }
 
@@ -144,16 +141,22 @@ public class SignUpActivity extends AppCompatActivity {
                                     if (task.isSuccessful()) {
                                         String token = task.getResult();
                                         db.collection("saviour").document(user.getEmail())
-                                                .update("fcmToken", token);
-                                        SplashActivity.fcmToken = token;
+                                                .update("fcmToken", token)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        SplashActivity.fcmToken = token;
+                                                        Log.d(TAG, "onSuccess: fcm token updated");
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.d(TAG, "onFailure: fcm token update failed");
+                                                    }
+                                                });
                                     }
                                 });
-
-                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
-                                        .addOnCompleteListener(task -> {
-                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
-                                            Log.d("FCM", msg);
-                                        });
 
                                 Saviour saviour = documentSnapshot.toObject(Saviour.class);
 
@@ -164,7 +167,8 @@ public class SignUpActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         Intent i = new Intent(SignUpActivity.this, BaseActivity.class);
-                                        startActivityForResult(i,RC_TOHOME);
+                                        startActivity(i);
+                                        finish();
                                     }
                                 });
 

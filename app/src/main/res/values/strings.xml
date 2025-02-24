@@ -125,7 +125,8 @@
     <string name="d_trip_text7">Give Feedback</string>
     <string name="d_trip_editText1">Tell us more...</string>
     <string name="d_trip_btn1">Report</string>
-    <string name="d_trip_btn2">End Trip</string>
+    <string name="d_trip_btn2_awaiting">End in 20s</string>
+    <string name="d_trip_btn2_end">End Trip</string>
     <string name="d_trip_btn3">Submit</string>
     <string name="d_trip_btn4">Back To Home</string>
 

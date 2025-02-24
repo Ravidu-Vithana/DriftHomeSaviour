@@ -26,6 +26,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 public class SplashActivity extends AppCompatActivity {
     private static final String TAG = "SplashActivity";
     public static String fcmToken;
+    private Saviour loggedSaviour;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,22 +66,6 @@ public class SplashActivity extends AppCompatActivity {
                         .get()
                         .addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists()) {
-
-                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        String token = task.getResult();
-                                        db.collection("saviour").document(user.getEmail())
-                                                .update("fcmToken", token);
-                                        SplashActivity.fcmToken = token;
-                                    }
-                                });
-
-                                FirebaseMessaging.getInstance().subscribeToTopic("saviours")
-                                        .addOnCompleteListener(task -> {
-                                            String msg = task.isSuccessful() ? "Subscribed to saviours topic!" : "Subscription failed.";
-                                            Log.d("FCM", msg);
-                                        });
-
                                 FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
                                         String token = task.getResult();
@@ -89,6 +74,7 @@ public class SplashActivity extends AppCompatActivity {
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void unused) {
+                                                        SplashActivity.fcmToken = token;
                                                         Log.d(TAG, "onSuccess: fcm token updated");
                                                     }
                                                 })
@@ -101,9 +87,9 @@ public class SplashActivity extends AppCompatActivity {
                                     }
                                 });
 
-                                Saviour saviour = documentSnapshot.toObject(Saviour.class);
+                                loggedSaviour = documentSnapshot.toObject(Saviour.class);
 
-                                saviour.updateSPSaviour(SplashActivity.this, saviour);
+                                loggedSaviour.updateSPSaviour(SplashActivity.this, loggedSaviour);
 
                                 runOnUiThread(this::navigateToHome);
                             } else {
