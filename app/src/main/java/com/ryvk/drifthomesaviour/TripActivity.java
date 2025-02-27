@@ -42,7 +42,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class TripActivity extends AppCompatActivity {
-    private static final String TAG = "PickupActivity";
+    private static final String TAG = "TripActivity";
     private String intentBody;
     private Trip tripData;
     private String rideId;

@@ -208,7 +208,7 @@ public class Saviour {
     }
 
     public static Saviour getSPSaviour(Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("com.ryvk.drifthome.data", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("com.ryvk.drifthomesaviour.data", Context.MODE_PRIVATE);
         String saviourJSON = sharedPreferences.getString("user",null);
         Gson gson = new Gson();
         return gson.fromJson(saviourJSON, Saviour.class);
@@ -218,7 +218,7 @@ public class Saviour {
         Gson gson = new Gson();
         String saviourJSON = gson.toJson(saviour);
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences("com.ryvk.drifthome.data",Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("com.ryvk.drifthomesaviour.data",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("user",saviourJSON);
         editor.apply();
@@ -226,7 +226,7 @@ public class Saviour {
     }
 
     public void removeSPSaviour(Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("com.ryvk.drifthome.data",Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("com.ryvk.drifthomesaviour.data",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove("user");
         editor.apply();

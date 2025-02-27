@@ -45,11 +45,15 @@ public class DriftMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
+        Log.d(TAG, "called onMessageReceived");
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         this.remoteMessage = remoteMessage;
 
         if (remoteMessage.getNotification() != null) {
+            Log.d(TAG, "onMessageReceived:" + remoteMessage.getNotification().getTitle());
+
             // Get the current location
 
             String title = remoteMessage.getNotification().getTitle();
