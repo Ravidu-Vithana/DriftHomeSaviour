@@ -16,6 +16,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Utils.hideKeyboard(MainActivity.this);
                 EditText emailEditText = findViewById(R.id.editTextText2);
                 EditText passwordEditText = findViewById(R.id.editTextText14);
 
@@ -71,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Utils.hideKeyboard(MainActivity.this);
                         Intent i = new Intent(MainActivity.this, SignUpActivity.class);
                         startActivity(i);
                         finish();
@@ -86,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Utils.hideKeyboard(MainActivity.this);
                         Intent i = new Intent(MainActivity.this,GoogleAuthentication.class);
                         startActivity(i);
                         finish();
@@ -126,41 +132,57 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
                             if (documentSnapshot.exists()) {
-
-                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        String token = task.getResult();
-                                        db.collection("saviour").document(user.getEmail())
-                                                .update("fcmToken", token)
-                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void unused) {
-                                                        SplashActivity.fcmToken = token;
-                                                        Log.d(TAG, "onSuccess: fcm token updated");
-                                                    }
-                                                })
-                                                .addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.d(TAG, "onFailure: fcm token update failed");
-                                                    }
-                                                });
-                                    }
-                                });
-
                                 Saviour saviour = documentSnapshot.toObject(Saviour.class);
 
-                                //update shared preferences
-                                saviour.updateSPSaviour(MainActivity.this,saviour);
+                                if(saviour.isBlocked()){
+                                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                            .requestIdToken(getString(R.string.web_server_client_id))
+                                            .requestEmail()
+                                            .build();
 
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Intent i = new Intent(MainActivity.this, BaseActivity.class);
-                                        startActivity(i);
-                                        finish();
-                                    }
-                                });
+                                    GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(MainActivity.this, gso);
+                                    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                                    mAuth.signOut();
+                                    mGoogleSignInClient.signOut();
+                                    Log.i(TAG, "onClick: Logout, user logged out------------------------");
+
+                                    saviour.removeSPSaviour(MainActivity.this);
+
+                                    AlertUtils.showAlert(MainActivity.this,"Blocked!","You have been blocked by the admin!");
+                                }else {
+                                    FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            String token = task.getResult();
+                                            db.collection("saviour").document(user.getEmail())
+                                                    .update("fcmToken", token)
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void unused) {
+                                                            SplashActivity.fcmToken = token;
+                                                            Log.d(TAG, "onSuccess: fcm token updated");
+                                                        }
+                                                    })
+                                                    .addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.d(TAG, "onFailure: fcm token update failed");
+                                                        }
+                                                    });
+                                        }
+                                    });
+
+                                    saviour.updateSPSaviour(MainActivity.this,saviour);
+
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Intent i = new Intent(MainActivity.this, BaseActivity.class);
+                                            startActivity(i);
+                                            finish();
+                                        }
+                                    });
+                                }
+
 
                             } else {
                                 runOnUiThread(() -> AlertUtils.showAlert(getApplicationContext(),"Login Error","Data retrieval failed! Please restart the application."));

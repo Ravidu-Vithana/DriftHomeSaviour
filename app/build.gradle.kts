@@ -77,6 +77,9 @@ dependencies {
     //add GSON
     implementation ("com.google.code.gson:gson:2.11.0")
 
+    //add library for uploading cropped profile images
+    implementation("com.github.yalantis:ucrop:2.2.6")
+
     //add glide for GIF manipulation
     implementation ("com.github.bumptech.glide:glide:4.15.1")
 }

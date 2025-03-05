@@ -20,15 +20,18 @@ public class Saviour {
     public static final int KYC_UNVERIYFIED = 0;
     public static final int KYC_PENDING = 1;
     public static final int KYC_VERIYFIED = 2;
+    public static final int KYC_DECLINED = 3;
     private String email;
     private String name;
     private String mobile;
     private String dob;
     private String gender;
+    private String profile_pic;
     private int tokens;
     private int trip_count;
     private String vehicle;
     private int kyc;
+    private boolean blocked;
     private boolean online;
     private String created_at;
     private String updated_at;
@@ -73,6 +76,14 @@ public class Saviour {
         this.gender = gender;
     }
 
+    public String getProfile_pic() {
+        return profile_pic;
+    }
+
+    public void setProfile_pic(String profile_pic) {
+        this.profile_pic = profile_pic;
+    }
+
     public int getTokens() {
         return tokens;
     }
@@ -104,6 +115,10 @@ public class Saviour {
     public void setKyc(int kyc) {
         this.kyc = kyc;
     }
+
+    public boolean isBlocked() {return blocked;}
+
+    public void setBlocked(boolean blocked) {this.blocked = blocked;}
 
     public boolean isOnline() {
         return online;

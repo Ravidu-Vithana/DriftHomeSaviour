@@ -214,6 +214,7 @@ public class EmailPasswordAuthentication extends AppCompatActivity {
             saviour.put("trip_count", 0);
             saviour.put("vehicle", "not assigned");
             saviour.put("kyc", Saviour.KYC_UNVERIYFIED);
+            saviour.put("blocked", false);
             saviour.put("created_at", Validation.todayDateTime());
             saviour.put("updated_at", Validation.todayDateTime());
 

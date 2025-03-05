@@ -6,12 +6,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 
 public class AlertUtils {
-    public static void showAlert(Context context, String title, String message) {
-        new AlertDialog.Builder(context)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", null)
-                .show();
+    public static AlertDialog showAlert(Context context, String title, String message) {
+        if(context instanceof Activity){
+            AlertDialog alertDialog = new AlertDialog.Builder(context)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK", null)
+                    .show();
+            return alertDialog;
+        }
+        return null;
     }
     public static void showConfirmDialog(Context context, String title, String message,
                                          DialogInterface.OnClickListener yesListener) {

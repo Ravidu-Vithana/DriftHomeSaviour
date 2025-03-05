@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -69,6 +70,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
     private String rideId;
     public static String drinkerFcmToken;
     private String drinkerName;
+    private String drinkerProfilePicUrl;
     private GeoPoint userLocation;
     private GeoPoint pickupLocation;
     private String distanceInKm;
@@ -127,14 +129,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
         acceptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (standby != null && standby.isAlive()) {
-                    standby.interrupt();
-                }
                 checkIfRequestExists();
-                Intent i = new Intent(getApplicationContext(), PickupActivity.class);
-                i.putExtra("body", intentBody);
-                startActivity(i);
-                finish();
             }
         });
 
@@ -160,6 +155,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
 
             rideId = rideData.get("rideId").getAsString();
             drinkerName = rideData.get("customerName").getAsString();
+            drinkerProfilePicUrl = rideData.get("profilePicUrl").getAsString();
             drinkerFcmToken = rideData.get("fcmToken").getAsString();
             pickupLocation = gson.fromJson(rideData.get("location"), GeoPoint.class);
 
@@ -178,6 +174,36 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
             e.printStackTrace();
             return;
         }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                HashMap<String,Object> tripUpdateHash = new HashMap<>();
+                tripUpdateHash.put("saviour_email",loggedSaviour.getEmail());
+                tripUpdateHash.put("current_saviour_location",userLocation);
+
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("trip").document(rideId)
+                        .update(tripUpdateHash)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Log.d(TAG, "onSuccess: Saviour email added to trip : success");
+                                Intent i = new Intent(getApplicationContext(), PickupActivity.class);
+                                i.putExtra("body", intentBody);
+                                startActivity(i);
+                                finish();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "onFailure: Saviour email adding to trip : failed");
+                            }
+                        });
+            }
+        }).start();
 
         String BASE_URL = getResources().getString(R.string.base_url);
         RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
@@ -202,32 +228,6 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
             }
         });
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                HashMap<String,Object> tripUpdateHash = new HashMap<>();
-                tripUpdateHash.put("saviour_email",loggedSaviour.getEmail());
-                tripUpdateHash.put("current_saviour_location",userLocation);
-
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection("trip").document(rideId)
-                        .update(tripUpdateHash)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Log.d(TAG, "onSuccess: Saviour email added to trip : success");
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "onFailure: Saviour email adding to trip : failed");
-                            }
-                        });
-            }
-        }).start();
-
     }
 
     private void checkIfRequestExists(){
@@ -236,9 +236,19 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        acceptRide();
+                        Trip trip = documentSnapshot.toObject(Trip.class);
+                        if(trip != null && trip.getSaviour_email() != null){
+                            exitDialog = AlertUtils.showAlert(RideRequestActivity.this,"Error","Ride request is already accepted");
+                        }else if(trip != null && trip.getSaviour_email() == null){
+                            if (standby != null && standby.isAlive()) {
+                                standby.interrupt();
+                            }
+                            acceptRide();
+                        }else{
+                            exitDialog = AlertUtils.showAlert(RideRequestActivity.this,"Error","Something went wrong.");
+                        }
                     } else {
-                        Log.d("Firestore", "No such document exists");
+                        exitDialog = AlertUtils.showAlert(RideRequestActivity.this,"Error","Ride request is already cancelled");
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -391,6 +401,7 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void updateUI (){
+        ImageView drinkerProfileImageView = findViewById(R.id.imageView2);
         TextView nameTextView = findViewById(R.id.textView16);
         TextView distanceTextView = findViewById(R.id.textView48);
         ProgressBar progressBar = findViewById(R.id.requestRideProgressBar);
@@ -398,6 +409,9 @@ public class RideRequestActivity extends AppCompatActivity implements OnMapReady
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(drinkerProfilePicUrl != null && !drinkerProfilePicUrl.isBlank()){
+                    Utils.loadImageUrlToView(RideRequestActivity.this, drinkerProfileImageView, drinkerProfilePicUrl);
+                }
                 nameTextView.setText(drinkerName);
                 distanceTextView.setText("("+distanceInKm+" KM Away)");
 

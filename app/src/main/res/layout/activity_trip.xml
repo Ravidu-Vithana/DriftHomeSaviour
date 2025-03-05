@@ -163,18 +163,28 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView18" />
 
             <ImageButton
+                android:id="@+id/imageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="?android:attr/selectableItemBackground"
+                app:layout_constraintStart_toStartOf="@+id/button12"
+                app:layout_constraintTop_toBottomOf="@+id/button12"
+                app:srcCompat="@drawable/call" />
+
+            <ImageButton
                 android:id="@+id/imageButton2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?android:attr/selectableItemBackground"
+                app:layout_constraintBottom_toBottomOf="@+id/imageButton"
                 app:layout_constraintEnd_toEndOf="@+id/button12"
-                app:layout_constraintStart_toStartOf="@+id/button12"
-                app:layout_constraintTop_toTopOf="@+id/textView18"
+                app:layout_constraintTop_toTopOf="@+id/imageButton"
                 app:srcCompat="@drawable/navigation" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
-                android:layout_width="wrap_content"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:visibility="invisible"
@@ -211,6 +221,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="@string/d_trip_text6_placeholder"
+                        android:textAlignment="center"
                         android:textColor="@color/white"
                         android:textSize="20sp"
                         app:layout_constraintEnd_toEndOf="parent"

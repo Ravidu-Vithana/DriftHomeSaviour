@@ -48,10 +48,12 @@
     <string name="d_otpVerification_edittext1_placeholder">******</string>
 
     <string name="d_homeFragment_text1">Good Morning,</string>
-    <string name="d_homeFragment_text2">Jayathilaka</string>
+    <string name="d_homeFragment_text2">____________</string>
     <string name="d_homeFragment_text3">Please complete your KYC to start the service</string>
     <string name="d_homeFragment_text4">Your KYC is pending approval. You will be notified when approved.</string>
+    <string name="d_homeFragment_text5">Your KYC is declined. Please resubmit a new KYC.</string>
     <string name="d_homeFragment_btn1">Fill the KYC</string>
+    <string name="d_homeFragment_btn2">Resubmit KYC</string>
 
     <string name="d_profileFragment_text1">Profile</string>
     <string name="d_profileFragment_text2">My Addresses</string>

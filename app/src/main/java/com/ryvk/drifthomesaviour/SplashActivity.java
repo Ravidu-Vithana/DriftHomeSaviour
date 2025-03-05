@@ -14,6 +14,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -66,32 +69,48 @@ public class SplashActivity extends AppCompatActivity {
                         .get()
                         .addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists()) {
-                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        String token = task.getResult();
-                                        db.collection("saviour").document(user.getEmail())
-                                                .update("fcmToken", token)
-                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void unused) {
-                                                        SplashActivity.fcmToken = token;
-                                                        Log.d(TAG, "onSuccess: fcm token updated");
-                                                    }
-                                                })
-                                                .addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.d(TAG, "onFailure: fcm token update failed");
-                                                    }
-                                                });
-                                    }
-                                });
-
                                 loggedSaviour = documentSnapshot.toObject(Saviour.class);
 
-                                loggedSaviour.updateSPSaviour(SplashActivity.this, loggedSaviour);
+                                if(isBlocked(loggedSaviour)){
+                                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                            .requestIdToken(getString(R.string.web_server_client_id))
+                                            .requestEmail()
+                                            .build();
 
-                                runOnUiThread(this::navigateToHome);
+                                    GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(SplashActivity.this, gso);
+                                    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                                    mAuth.signOut();
+                                    mGoogleSignInClient.signOut();
+                                    Log.i(TAG, "onClick: Logout, user logged out------------------------");
+
+                                    loggedSaviour.removeSPSaviour(SplashActivity.this);
+                                    runOnUiThread(this::navigateToLogin);
+                                }else{
+                                    FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            String token = task.getResult();
+                                            db.collection("saviour").document(user.getEmail())
+                                                    .update("fcmToken", token)
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void unused) {
+                                                            SplashActivity.fcmToken = token;
+                                                            Log.d(TAG, "onSuccess: fcm token updated");
+                                                        }
+                                                    })
+                                                    .addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.d(TAG, "onFailure: fcm token update failed");
+                                                        }
+                                                    });
+                                        }
+                                    });
+
+                                    loggedSaviour.updateSPSaviour(SplashActivity.this, loggedSaviour);
+                                    runOnUiThread(this::navigateToHome);
+                                }
+
                             } else {
                                 runOnUiThread(this::showErrorAndLogin);
                             }
@@ -101,6 +120,10 @@ public class SplashActivity extends AppCompatActivity {
                 runOnUiThread(this::navigateToLogin);
             }
         }).start();
+    }
+
+    public static boolean isBlocked(Saviour saviour){
+        return saviour != null && saviour.isBlocked();
     }
 
     private void navigateToHome() {

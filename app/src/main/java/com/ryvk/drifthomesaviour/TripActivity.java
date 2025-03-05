@@ -28,10 +28,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -45,11 +47,15 @@ public class TripActivity extends AppCompatActivity {
     private static final String TAG = "TripActivity";
     private String intentBody;
     private Trip tripData;
+    private String drinkerMobile;
     private String rideId;
     private int totalFare;
     private static final OkHttpClient client = new OkHttpClient();
     private OnBackPressedCallback callback;
     private Thread endButtonThread;
+    private TextView nameText;
+    private TextView pickupLocationText;
+    private TextView dropLocationText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +67,10 @@ public class TripActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        nameText = findViewById(R.id.textView18);
+        pickupLocationText = findViewById(R.id.textView19);
+        dropLocationText = findViewById(R.id.textView20);
 
         Intent intent = getIntent();
         Gson gson = new GsonBuilder()
@@ -93,6 +103,14 @@ public class TripActivity extends AppCompatActivity {
             }
         });
 
+        ImageButton callButton = findViewById(R.id.imageButton);
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Utils.showCallOptionsPopup(view,TripActivity.this,drinkerMobile);
+            }
+        });
+
         ImageButton navigationButton = findViewById(R.id.imageButton2);
         navigationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,8 +118,8 @@ public class TripActivity extends AppCompatActivity {
                 if (tripData.getPickup() != null && tripData.getDrop() != null) {
                     // Create the URI for Google Maps navigation
                     String uri = String.format("google.navigation:q=%f,%f&origin=%f,%f&mode=d",
-                            tripData.getPickup().getLatitude(), tripData.getPickup().getLongitude(),
-                            tripData.getDrop().getLatitude(), tripData.getDrop().getLongitude());
+                            tripData.getDrop().getLatitude(), tripData.getDrop().getLongitude(),
+                            tripData.getPickup().getLatitude(), tripData.getPickup().getLongitude());
 
                     // Create an Intent to open Google Maps
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
@@ -151,16 +169,115 @@ public class TripActivity extends AppCompatActivity {
         });
         endButtonThread.start();
 
+        RatingBar ratingBar = findViewById(R.id.ratingBar);
+        EditText feedbackInput = findViewById(R.id.editTextTextMultiLine);
+
         feedbackSubmitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Submit feedback", Toast.LENGTH_SHORT).show();
+                float rating = ratingBar.getRating();
+                String feedback = feedbackInput.getText().toString().trim();
+
+                if (rating < 1) {
+                    rating = 1;
+                }
+
+                if (feedback.isEmpty()) {
+                    Toast.makeText(TripActivity.this, "Please enter your feedback!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Map<String, Object> feedbackData = new HashMap<>();
+                    feedbackData.put("rating", rating);
+                    feedbackData.put("feedback", feedback);
+                    feedbackData.put("timestamp", System.currentTimeMillis());
+
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    db.collection("trip").document(rideId)
+                            .update("feedback_of_saviour", feedbackData)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(TripActivity.this, "Feedback submitted successfully!", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(TripActivity.this, "Failed to submit feedback: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                }
             }
         });
         backToHomeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+    }
+
+    private void loadTripLocations(){
+
+        Saviour loggedSaviour = Saviour.getSPSaviour(TripActivity.this);
+        String apiKey = loggedSaviour.getApiKey(TripActivity.this);
+
+        String geocodingApiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + tripData.getPickup().getLatitude() + "," + tripData.getPickup().getLongitude() + "&key=" + apiKey;
+        Request geocodeApiRequest = new Request.Builder().url(geocodingApiUrl).build();
+        client.newCall(geocodeApiRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "Failed to get geocode data", e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    try {
+                        // Parse the Geocoding API response
+                        Gson gson = new Gson();
+                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                        JsonArray results = jsonResponse.getAsJsonArray("results");
+
+                        if (results != null && results.size() > 0) {
+                            JsonObject firstResult = results.get(0).getAsJsonObject();
+                            String pickupAddress = firstResult.get("formatted_address").getAsString();
+                            Log.d(TAG, "Address: " + pickupAddress);
+                            pickupLocationText.setText(pickupAddress);
+                        } else {
+                            Log.d(TAG, "No address found");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing geocode response", e);
+                    }
+                }
+            }
+        });
+
+        String geocodingApiUrl2 = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + tripData.getDrop().getLatitude() + "," + tripData.getDrop().getLongitude() + "&key=" + apiKey;
+        Request geocodeApiRequest2 = new Request.Builder().url(geocodingApiUrl2).build();
+        client.newCall(geocodeApiRequest2).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "Failed to get geocode data", e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    try {
+                        // Parse the Geocoding API response
+                        Gson gson = new Gson();
+                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                        JsonArray results = jsonResponse.getAsJsonArray("results");
+
+                        if (results != null && results.size() > 0) {
+                            JsonObject firstResult = results.get(0).getAsJsonObject();
+                            String dropAddress = firstResult.get("formatted_address").getAsString();
+                            Log.d(TAG, "Address: " + dropAddress);
+                            dropLocationText.setText(dropAddress);
+                        } else {
+                            Log.d(TAG, "No address found");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing geocode response", e);
+                    }
+                }
             }
         });
     }
@@ -172,6 +289,22 @@ public class TripActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         tripData = documentSnapshot.toObject(Trip.class);
+                        loadTripLocations();
+
+                        db.collection("drinker")
+                                .document(tripData.getDrinker_email())
+                                .get()
+                                .addOnSuccessListener(documentSnapshot2 -> {
+                                    if (documentSnapshot2.exists()) {
+                                        nameText.setText(documentSnapshot2.get("name").toString());
+                                        drinkerMobile = documentSnapshot2.get("mobile").toString();
+                                    } else {
+                                        Log.d(TAG, "onFailure: drinker data retrieval failed");
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.d(TAG, "onFailure: trip data retrieval failed");
+                                });
                     } else {
                         Log.d("Firestore", "No such document exists");
                     }

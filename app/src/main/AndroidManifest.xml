@@ -70,6 +70,9 @@
             android:name=".MainActivity"
             android:exported="true">
         </activity>
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <service
             android:name=".DriftMessagingService"
             android:exported="true">
@@ -83,7 +86,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="..." />
+            android:value="AIzaSyAJnZni-qpN68pAz9l68BcH0aWvkxm6YR0" />
     </application>
 
 </manifest>

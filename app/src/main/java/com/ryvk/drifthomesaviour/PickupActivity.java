@@ -45,6 +45,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -70,6 +71,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
     private Saviour loggedSaviour;
     private String rideId;
     private String drinkerName;
+    private String drinkerMobile;
     private GeoPoint userLocation;
     private GeoPoint pickupLocation;
     private String pickupAddress;
@@ -111,6 +113,38 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
 
         }
 
+        new Thread(()->{
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("trip")
+                    .document(rideId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Trip trip = documentSnapshot.toObject(Trip.class);
+
+                            db.collection("drinker")
+                                    .document(trip.getDrinker_email())
+                                    .get()
+                                    .addOnSuccessListener(documentSnapshot2 -> {
+                                        if (documentSnapshot2.exists()) {
+                                            drinkerMobile = documentSnapshot2.get("mobile").toString();
+                                        } else {
+                                            Log.d(TAG, "onFailure: drinker data retrieval failed");
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.d(TAG, "onFailure: trip data retrieval failed");
+                                    });
+
+                        } else {
+
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.d(TAG, "onFailure: trip data retrieval failed");
+                    });
+        }).start();
+
         loggedSaviour = Saviour.getSPSaviour(PickupActivity.this);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(PickupActivity.this);
@@ -129,7 +163,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
         callButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showCallOptionsPopup(view);
+                Utils.showCallOptionsPopup(view,PickupActivity.this,drinkerMobile);
             }
         });
 
@@ -178,6 +212,9 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
             @Override
             public void run() {
                 for(int x = 20; x >= 0; x--){
+                    if (Thread.currentThread().isInterrupted()) {
+                        return;
+                    }
                     int seconds = x;
                     runOnUiThread(()->markAsArrivedButton.setText("Mark in "+seconds+"s"));
                     try {
@@ -330,7 +367,7 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
             public void run() {
                 if (mMap != null && !polylinePoints.isEmpty()) {
                     Polyline polyline = mMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(getResources().getColor(R.color.d_blue))); // Replace with your desired color
-                    polyline.setWidth(10); // You can change the width of the polyline
+                    polyline.setWidth(10);
                 }
             }
         });
@@ -550,20 +587,6 @@ public class PickupActivity extends AppCompatActivity  implements OnMapReadyCall
                 });
             }
         });
-    }
-
-    private void showCallOptionsPopup(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        popup.getMenu().add("Call the Drinker");
-        popup.getMenu().add("Call 1990");
-        popup.getMenu().add("Call 119");
-
-        popup.setOnMenuItemClickListener(item -> {
-            Toast.makeText(this, "Clicked: " + item.getTitle(), Toast.LENGTH_SHORT).show();
-            return true;
-        });
-
-        popup.show();
     }
 
     @Override

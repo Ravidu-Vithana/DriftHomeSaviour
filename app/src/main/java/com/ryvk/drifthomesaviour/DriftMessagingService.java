@@ -71,8 +71,6 @@ public class DriftMessagingService extends FirebaseMessagingService {
     }
 
     private void getCurrentLocation() {
-        // Check if permission is granted (You should handle permissions)
-        // Get the last known location
 
         Saviour loggedSaviour = Saviour.getSPSaviour(this);
         API_KEY = loggedSaviour.getApiKey(this);
@@ -174,8 +172,10 @@ public class DriftMessagingService extends FirebaseMessagingService {
     public void onNewToken(String token) {
         Log.d(TAG, "New token generated: " + token);
         Saviour saviour = Saviour.getSPSaviour(this);
-        FirebaseFirestore.getInstance().collection("saviour").document(saviour.getEmail())
-                .update("fcmToken", token);
-        SplashActivity.fcmToken = token;
+        if(saviour != null){
+            FirebaseFirestore.getInstance().collection("saviour").document(saviour.getEmail())
+                    .update("fcmToken", token);
+            SplashActivity.fcmToken = token;
+        }
     }
 }
